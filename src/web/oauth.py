@@ -52,6 +52,36 @@ def _mcp_tokens_file() -> str:
     return os.path.join(sh.config["buckets_dir"], ".dashboard_mcp_tokens.json")
 
 
+def _oauth_clients_file() -> str:
+    return os.path.join(sh.config["buckets_dir"], ".dashboard_oauth_clients.json")
+
+
+def _load_oauth_clients() -> None:
+    global _oauth_clients
+    try:
+        path = _oauth_clients_file()
+        if not os.path.exists(path):
+            return
+        with open(path, "r", encoding="utf-8") as f:
+            raw = _json_lib.load(f)
+        if isinstance(raw, dict):
+            _oauth_clients = raw
+    except Exception as e:
+        logger.warning(f"[oauth] failed to load oauth clients: {e}")
+
+
+def _save_oauth_clients() -> None:
+    try:
+        path = _oauth_clients_file()
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        tmp = path + ".tmp"
+        with open(tmp, "w", encoding="utf-8") as f:
+            _json_lib.dump(_oauth_clients, f)
+        os.replace(tmp, path)
+    except Exception as e:
+        logger.warning(f"[oauth] failed to save oauth clients: {e}")
+
+
 def _load_mcp_tokens() -> None:
     global _mcp_tokens
     try:
@@ -165,6 +195,7 @@ button:hover{{background:#d4b87a}}
 def register(mcp) -> None:
     """注册 /.well-known/* 与 /oauth/* 路由，并在装配时载入持久化 token。"""
     _load_mcp_tokens()   # 启动时恢复持久化 token，Docker 重启不再强制重新 OAuth
+    _load_oauth_clients()  # 启动时恢复客户端注册，重启窗口期的授权流程不再报 unknown client_id
 
     @mcp.custom_route("/.well-known/oauth-protected-resource", methods=["GET"])
     @mcp.custom_route("/.well-known/oauth-protected-resource/{resource_path:path}", methods=["GET"])
@@ -209,6 +240,7 @@ def register(mcp) -> None:
             "redirect_uris": body.get("redirect_uris", []),
             "client_name": body.get("client_name", "MCP Client"),
         }
+        _save_oauth_clients()
         return JSONResponse({
             "client_id": client_id,
             "client_id_issued_at": int(_time_mod.time()),

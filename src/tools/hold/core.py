@@ -40,10 +40,14 @@ async def store_core(
 ) -> str:
     try:
         analysis = await rt.dehydrator.analyze(content)
-    except Exception as e:
-        raise RuntimeError(
-            f"API key 未配置或调用失败，打标无法完成，桶未创建。请检查 OMBRE_COMPRESS_API_KEY。（错误：{e}）"
-        ) from e
+    except Exception:
+        analysis = {
+            "domain": ["未分类"],
+            "valence": 0.5,
+            "arousal": 0.3,
+            "tags": list(extra_tags),
+            "suggested_name": content[:18].replace("\n", " "),
+        }
 
     domain = analysis.get("domain") or ["未分类"]
     if not isinstance(domain, list):

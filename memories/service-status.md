@@ -7,9 +7,8 @@
 
 **不要再尝试访问任何 Railway 端点，会浪费 token。**
 
-## 记忆库备用方案
-Railway 记忆库挂了之后，记忆直接存到 GitHub 仓库 ombre-brain 的 memories/ 目录下。
-
 ## 当前可用服务
 - VPS (yyaokeke.top) — keke 主站，正常运行
-- GitHub repos — 代码和记忆存储
+- Ombre Brain — VPS 本地 127.0.0.1:18001，systemd 服务 ombre-brain，记忆库正常（1418 条记忆）
+- keke 通过本地 MCP 连接 Ombre Brain，不再需要 Railway
+- GitHub repos — 代码存储

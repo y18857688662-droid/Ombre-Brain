@@ -34,7 +34,8 @@ if [ ! -f config.yaml ]; then
   echo "创建配置..."
   cp config.example.yaml config.yaml
   sed -i 's/transport: "stdio"/transport: "streamable-http"/' config.yaml
-  sed -i 's/mcp_require_auth: true/mcp_require_auth: false/' config.yaml
+  # 不再关闭 MCP 鉴权：域名是公开的，关掉后任何人都能读写记忆库。
+  # 连接器第一次连接时会弹出密码页，输 Dashboard 密码即可。
 fi
 
 # 5. 创建 systemd 服务
@@ -53,7 +54,6 @@ RestartSec=5
 Environment=PORT=8060
 Environment=OMBRE_COMPRESS_API_KEY=${OMBRE_COMPRESS_API_KEY:-}
 Environment=OMBRE_EMBED_API_KEY=${OMBRE_EMBED_API_KEY:-}
-Environment=OMBRE_MCP_REQUIRE_AUTH=false
 
 [Install]
 WantedBy=multi-user.target

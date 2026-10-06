@@ -314,10 +314,14 @@ _gh_auto_interval: int = int(_gh_cfg.get("auto_interval_minutes") or 0)
 # （7 个 @mcp_extra.tool() 注册不动），启动入口处把它的工具回灌进 mcp 统一暴露。
 # 两个实例共享同一进程、同一 runtime、同一 bucket_mgr；HTTP custom_route（dashboard、API）
 # 全部挂在 mcp 主实例上。
+# stateless_http：不在服务端保存 MCP 会话。否则服务重启或会话被回收后，
+# 客户端手里的旧 session id 会报 "session expired"，记忆库就读不了了。
+# 本项目的工具都不依赖会话状态，无状态模式更稳。
 mcp = FastMCP(
     "Ombre Brain",
     host="0.0.0.0",
     port=OMBRE_PORT,
+    stateless_http=True,
 )
 mcp_extra = FastMCP(
     "Ombre Brain Extra",
